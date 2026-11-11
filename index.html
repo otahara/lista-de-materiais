@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Materiais">
+<title>Lista de Materiais</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --card: #fff; --text: #1f2937; --muted: #6b7280;
+    --navy: #1f3566; --orange: #f08a24;
+    --primary: #1f3566; --done: #10b981; --done-bg: #ecfdf5; --danger: #ef4444; --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  /* ===== Cabeçalho no estilo da lista da escola ===== */
+  .hero {
+    position: relative; background: #fff; overflow: hidden;
+    height: calc(env(safe-area-inset-top) + 220px);
+  }
+  .hero .waves { position: absolute; left: 0; bottom: 0; width: 100%; height: 150px; }
+  /* Conteúdo centralizado: no computador não se espalha pelas bordas */
+  .hero-inner { position: relative; height: 100%; max-width: 640px; margin: 0 auto; }
+  .title-row {
+    position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 4px;
+    padding: calc(env(safe-area-inset-top) + 14px) 8px 0;
+  }
+  .hero h1 {
+    flex: 0 1 auto; margin: 0; text-align: center;
+    font-family: 'Fredoka', 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    font-weight: 700; font-size: clamp(22px, 6.6vw, 32px); line-height: 1.05; letter-spacing: .02em;
+    color: #dfe3fb; -webkit-text-stroke: 1.5px var(--navy); paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--navy);
+    animation: dropIn .6s cubic-bezier(.3,1.5,.5,1);
+  }
+  .hero .heart, .hero .lion { flex-shrink: 0; width: clamp(56px, 19vw, 84px); display: flex; align-items: center; justify-content: center; }
+  .hero .heart svg { width: 74%; animation: beat 2.4s ease-in-out infinite; }
+  .hero .lion span {
+    display: block; font-size: clamp(60px, 19vw, 84px); line-height: 1;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,.25));
+    transform: rotate(16deg);
+    animation: peek .8s ease-out .2s both;
+  }
+  .hero .paw { position: absolute; z-index: 1; }
+  .hero .paw.p1 { left: 14px; bottom: 26px; width: 26px; transform: rotate(-18deg); fill: #4b6cb7; }
+  .hero .paw.p2 { right: 14px; bottom: 26px; width: 26px; transform: rotate(18deg); fill: #4b6cb7; }
+  .hero .turma {
+    position: absolute; z-index: 2; left: 0; right: 0; bottom: 50px; text-align: center;
+    color: #fff; font-weight: 700; font-size: 15px; letter-spacing: .02em;
+  }
+  .hero .turma small { display: block; font-weight: 500; font-size: 12px; opacity: .8; margin-top: 2px; letter-spacing: .08em; text-transform: uppercase; }
+
+  @keyframes dropIn { from { opacity: 0; transform: translateY(-14px) scale(.9); } to { opacity: 1; transform: none; } }
+  @keyframes peek { from { opacity: 0; transform: translateY(24px) rotate(30deg) scale(.7); } to { opacity: 1; transform: rotate(16deg); } }
+  @keyframes beat { 0%, 100% { transform: scale(1) rotate(-8deg); } 12% { transform: scale(1.18) rotate(-8deg); } 24% { transform: scale(1) rotate(-8deg); } }
+
+  /* Barra de progresso fixa no topo ao rolar */
+  .progress {
+    position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.96);
+    padding: calc(env(safe-area-inset-top) + 10px) 16px 12px;
+    box-shadow: 0 2px 10px rgba(31,53,102,.12); backdrop-filter: blur(6px);
+  }
+  .progress-text { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-text span:last-child { color: var(--orange); }
+  .bar { height: 10px; background: #e6eaf5; border-radius: 5px; overflow: hidden; }
+  .bar > div {
+    height: 100%; width: 0; border-radius: 5px;
+    background: linear-gradient(90deg, var(--orange), #f7b35a);
+    transition: width .5s cubic-bezier(.3,1.4,.5,1);
+  }
+
+  footer { text-align: center; margin-top: 28px; line-height: 0; }
+  footer .slogan {
+    background: var(--navy); color: #fff; line-height: 1.2; padding: 4px 16px calc(22px + env(safe-area-inset-bottom));
+    font-family: 'Fredoka', 'Arial Rounded MT Bold', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: .03em;
+  }
+  footer svg { width: 100%; height: 40px; display: block; }
+
+  main { padding: 16px; max-width: 600px; margin: 0 auto; }
+  form { display: flex; gap: 8px; margin-bottom: 8px; }
+  input[type=text] {
+    flex: 1; min-width: 0; padding: 14px; font-size: 16px; border: 1px solid var(--border);
+    border-radius: 12px; background: var(--card); color: var(--text);
+  }
+  input[type=text]:focus { outline: 2px solid var(--primary); border-color: transparent; }
+  button { font-family: inherit; cursor: pointer; }
+  button.add {
+    padding: 0 20px; font-size: 24px; border: none; border-radius: 12px;
+    background: var(--primary); color: #fff; transition: transform .1s;
+  }
+  button.add:active { transform: scale(.92); }
+
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--navy); opacity: .75; margin: 22px 4px 8px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex; align-items: center; gap: 12px; background: var(--card);
+    padding: 12px 8px 12px 14px; border-radius: 12px; margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    transition: background-color .3s;
+  }
+  li.done { background: var(--done-bg); }
+  li .check {
+    width: 30px; height: 30px; border-radius: 50%; border: 2px solid #cbd5e1;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    background: #fff; padding: 0; position: relative;
+    transition: background-color .25s, border-color .25s;
+  }
+  li .check svg { width: 18px; height: 18px; }
+  li .check path {
+    fill: none; stroke: #fff; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 24; stroke-dashoffset: 24;
+  }
+  li.done .check { background: var(--done); border-color: var(--done); }
+  li.done .check path { stroke-dashoffset: 0; }
+
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: 16px; font-weight: 500; word-break: break-word; position: relative; display: inline; }
+  .qty {
+    display: inline-block; font-size: 12px; font-weight: 600; color: var(--primary);
+    background: #eef2ff; border-radius: 6px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px;
+  }
+  .detail { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  li.done .name { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--done); }
+  li.done .qty { color: var(--done); background: #d1fae5; }
+  li.done .detail { display: none; }
+  li .del {
+    background: none; border: none; color: #9ca3af; font-size: 18px;
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  }
+  li .del:active { background: #fee2e2; color: var(--danger); }
+
+  /* ===== Animações ===== */
+  /* Marcando: círculo pulsa verde, o check se desenha, aparece uma onda */
+  li.anim-check .check { animation: pop .45s ease-out; background: var(--done); border-color: var(--done); }
+  li.anim-check .check path { transition: stroke-dashoffset .35s ease-out .05s; stroke-dashoffset: 0; }
+  li.anim-check .check::after {
+    content: ''; position: absolute; inset: -2px; border-radius: 50%;
+    border: 2px solid var(--done); animation: ripple .6s ease-out forwards;
+  }
+  li.anim-check { animation: flashGreen .6s ease-out; }
+  /* Desmarcando: o check encolhe e some, o círculo volta a ficar branco */
+  li.anim-uncheck .check { background: #fff; border-color: #cbd5e1; animation: shrink .4s ease-in; }
+  li.anim-uncheck .check svg { transition: transform .3s ease-in, opacity .3s ease-in; transform: scale(0) rotate(-90deg); opacity: 0; }
+  li.anim-uncheck { background: var(--card); }
+  li.anim-uncheck .name { text-decoration: none; color: var(--text); }
+  /* Chegando na nova seção */
+  li.arrive { animation: arrive .4s ease-out; }
+  /* Removendo */
+  li.leaving { animation: leave .35s ease-in forwards; pointer-events: none; }
+
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+  @keyframes shrink { 0% { transform: scale(1); } 50% { transform: scale(.75); } 100% { transform: scale(1); } }
+  @keyframes ripple { from { transform: scale(1); opacity: .8; } to { transform: scale(2.2); opacity: 0; } }
+  @keyframes flashGreen { 0% { background: var(--card); } 40% { background: #a7f3d0; } 100% { background: var(--done-bg); } }
+  @keyframes arrive { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes leave { to { opacity: 0; transform: translateX(60px); height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; } }
+
+  .celebrate {
+    text-align: center; color: var(--done); font-weight: 700; font-size: 18px; padding: 16px;
+    background: var(--done-bg); border-radius: 12px; margin-top: 12px; animation: arrive .5s ease-out;
+  }
+
+  button.share {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; margin-top: 24px; padding: 16px; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, var(--orange), #f7a440); color: #fff;
+    font-size: 16px; font-weight: 700; box-shadow: 0 4px 14px rgba(240,138,36,.35);
+    transition: transform .12s, box-shadow .2s;
+  }
+  button.share:active { transform: scale(.97); }
+  button.share svg { width: 22px; height: 22px; fill: #fff; stroke: #fff; stroke-width: 2; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 200;
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--navy); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2); transition: opacity .25s, transform .25s; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  details { margin-top: 28px; background: var(--card); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--muted); }
+  summary { font-weight: 600; color: var(--text); cursor: pointer; }
+  details ul { list-style: disc; padding-left: 18px; margin-top: 8px; }
+  details li { display: list-item; background: none; box-shadow: none; padding: 2px 0; margin: 0; }
+
+  /* ===== Janela de confirmação ===== */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(17,24,39,.45); z-index: 100;
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-bg.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--card); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0;
+    padding: 22px 18px calc(18px + env(safe-area-inset-bottom));
+    transform: translateY(100%); transition: transform .25s ease-out;
+  }
+  .modal-bg.open .modal { transform: none; }
+  .modal p { margin: 0 0 18px; font-size: 17px; text-align: center; line-height: 1.4; }
+  .modal .btns { display: flex; gap: 10px; }
+  .modal button { flex: 1; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 12px; border: none; }
+  .modal .cancel { background: #f3f4f6; color: var(--text); }
+  .modal .ok { background: var(--primary); color: #fff; }
+  .modal .ok.danger { background: var(--danger); }
+  /* ===== Computador / telas maiores ===== */
+  @media (min-width: 700px) {
+    .hero { height: 250px; }
+    .hero .waves { height: 170px; }
+    .hero .turma { font-size: 17px; bottom: 58px; }
+    .progress-inner { max-width: 600px; margin: 0 auto; }
+    main { padding-top: 24px; }
+    li { transition: background-color .3s, box-shadow .2s, transform .2s; }
+    li:hover { box-shadow: 0 4px 14px rgba(31,53,102,.1); transform: translateY(-1px); }
+    li .check:hover { border-color: var(--done); }
+    li .del:hover { background: #fee2e2; color: var(--danger); }
+    button.add:hover { filter: brightness(1.2); }
+    .modal-bg { align-items: center; }
+    .modal { border-radius: 20px; padding-bottom: 18px; transform: translateY(20px) scale(.96); opacity: 0; transition: transform .2s, opacity .2s; }
+    .modal-bg.open .modal { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <svg class="waves" viewBox="0 0 400 160" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,38 C110,95 250,10 400,0 L400,22 C250,30 110,118 0,62 Z" fill="#4b6cb7"/>
+    <path d="M0,62 C110,118 250,30 400,22 L400,128 C290,150 150,112 0,150 Z" fill="#1f3566"/>
+    <path d="M0,150 C150,112 290,150 400,128 L400,160 L0,160 Z" fill="#f4f6fb"/>
+  </svg>
+  <div class="hero-inner">
+    <svg class="paw p1" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="42" rx="15" ry="13"/><ellipse cx="12" cy="26" rx="6" ry="8"/><ellipse cx="24" cy="13" rx="6" ry="8"/><ellipse cx="40" cy="13" rx="6" ry="8"/><ellipse cx="52" cy="26" rx="6" ry="8"/></svg>
+    <div class="title-row">
+      <div class="heart"><svg viewBox="0 0 64 58" aria-hidden="true"><path d="M32,52 C14,40 5,30 6,18 C7,8 16,3 24,5 C28,6 31,9 32,13 C33,9 37,6 41,5 C49,3 58,9 58,19 C58,31 48,41 32,52 Z" fill="none" stroke="#f08a24" stroke-width="7" stroke-linejoin="round"/></svg></div>
+      <h1>LISTA MATERIAL<br>ESCOLAR</h1>
+      <div class="lion" aria-hidden="true"><span>🦁</span></div>
+    </div>
+    <div class="turma">INFANTIL 1 · Educação Infantil<small>Anglo Nova Granada · 2027</small></div>
+    <svg class="paw p2" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="42" rx="15" ry="13"/><ellipse cx="12" cy="26" rx="6" ry="8"/><ellipse cx="24" cy="13" rx="6" ry="8"/><ellipse cx="40" cy="13" rx="6" ry="8"/><ellipse cx="52" cy="26" rx="6" ry="8"/></svg>
+  </div>
+</header>
+<div class="progress"><div class="progress-inner">
+  <div class="progress-text"><span id="progressText"></span><span id="progressPct"></span></div>
+  <div class="bar"><div id="bar"></div></div>
+</div></div>
+<main>
+  <form id="form">
+    <input type="text" id="input" placeholder="Adicionar item..." autocomplete="off">
+    <button class="add" type="submit" aria-label="Adicionar">+</button>
+  </form>
+  <div id="celebrate"></div>
+  <div id="sections"></div>
+
+  <button class="share" id="shareBtn" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    Compartilhar o que falta comprar
+  </button>
+  <div class="toast" id="toast"></div>
+
+  <details>
+    <summary>Observações da escola</summary>
+    <ul>
+      <li>O uso do uniforme é obrigatório para todas as atividades escolares.</li>
+      <li>Todo material de uso pessoal deve ser etiquetado com o nome e ano do aluno.</li>
+      <li>O material de uso coletivo deve ser entregue na escola no 1º dia de aula, em sacolas/caixas grandes com o nome e ano do aluno.</li>
+      <li>O material de uso pessoal deverá ser trazido pelo aluno no 1º dia de aula.</li>
+      <li>Todo material de uso pessoal deve ser reposto quando necessário.</li>
+    </ul>
+  </details>
+</main>
+<footer>
+  <svg viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,40 L0,22 C120,-4 260,40 400,8 L400,40 Z" fill="#1f3566"/>
+  </svg>
+  <div class="slogan">AQUI SE ENSINA.<br>AQUI SE APRENDE.</div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <p id="modalText"></p>
+    <div class="btns">
+      <button class="cancel" id="modalCancel">Cancelar</button>
+      <button class="ok" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'lista-materiais-infantil1-2027';
+
+  // [nome, quantidade, detalhes]
+  const COLETIVO = [
+    ['Papel sulfite A4', '1 pacote', '75 g/m², 500 folhas'],
+    ['Bloco de desenho A4', '3 blocos', 'Mín. 180 g/m², mín. 20 folhas brancas'],
+    ['Papel textura visual', '1 pacote', '180 g/m², igual ou semelhante a Ridet'],
+    ['Bloco de desenho A3', '2 blocos', 'Mín. 140 g/m², mín. 20 folhas brancas'],
+    ['Cola colorida', '1 caixa', ''],
+    ['Lápis de cor jumbo triangular', '1 caixa', '12 cores, 100% madeira, mina mín. 3.0, semelhante a Faber-Castell'],
+    ['Cola branca', '1 tubo', 'Mín. 90 g, igual ou semelhante a Pritt/Bic'],
+    ['Giz de cera big/jumbo', '1 caixa', '12 cores, igual ou semelhante a Acrilex'],
+    ['Massa de modelar soft', '4 potes', 'Mín. 150 g, cores diversas, igual ou semelhante a Acrilex'],
+    ['Fita de cetim', '1 metro', '7 mm de largura'],
+    ['Tinta guache com brilho', '1 pote', '250 ml, cores sortidas, igual ou semelhante a Acrilex'],
+    ['Saquinhos transparentes', '10 un.', '30 cm x 40 cm'],
+    ['EVA com glitter', '3 folhas', '40 cm x 60 cm, mín. 2 mm'],
+    ['Lenços umedecidos', '2 caixas', 'Mín. 50 lenços'],
+    ['Brinquedos infantis', '2 un.', ''],
+    ['Pano multiuso para limpeza', '5 un.', 'Igual ou semelhante a Perfex'],
+    ['Marcador permanente preto', '2 un.', '2.0, igual ou semelhante a Pilot'],
+    ['Palitos de churrasco', '5 pacotes', '30 cm, sem ponta'],
+    ['Pincel chato nº 16', '1 un.', 'Cabo com no mínimo 14 cm'],
+    ['Pincel redondo anatômico nº 14', '1 un.', 'Igual ou semelhante a Condor'],
+    ['Balão nº 8', '1 pacote', 'Mín. 50 unidades'],
+    ['Palito de sorvete', '1 pacote', 'Sem ponta, mín. 100 un.'],
+    ['Palha artificial', '1 pacote', ''],
+    ['Pasta larga', '1 un.', ''],
+    ['Papel crepom', '3 rolos', 'Cores diversas'],
+    ['Lantejoula grande', '3 pacotes', 'Cores diversas'],
+    ['Cotonete', '1 caixa', ''],
+    ['Algodão', '1 pacote', ''],
+    ['Papel fotográfico', '1 pacote', '180 g'],
+    ['Color set', '1 pacote', ''],
+  ];
+  const INDIVIDUAL = [
+    ['Mochila grande com rodinhas', '1 un.', ''],
+    ['Garrafinha ou copo com bico', '1 un.', ''],
+    ['Troca de roupa (uniforme)', '1 troca', ''],
+    ['Pomada para prevenir assaduras', '1 un.', ''],
+    ['Fraldas', '4 un.', 'Caso use'],
+    ['Lenços umedecidos (uso pessoal)', '1 caixa', 'Mín. 50 lenços'],
+    ['Lancheira', '1 un.', ''],
+  ];
+
+  const GROUPS = [
+    { id: 'coletivo', title: 'Material coletivo' },
+    { id: 'individual', title: 'Material individual do aluno' },
+    { id: 'extra', title: 'Outros itens' },
+  ];
+
+  function seed() {
+    let n = 0;
+    const mk = (group) => ([name, qty, detail]) =>
+      ({ id: 'i' + (n++), name, qty, detail, group, done: false });
+    return [...COLETIVO.map(mk('coletivo')), ...INDIVIDUAL.map(mk('individual'))];
+  }
+
+  function load() {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { try { return JSON.parse(raw); } catch (e) {} }
+    return seed();
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(items)); }
+
+  let items = load();
+  save();
+  localStorage.removeItem('lista-materiais-v1'); // apaga a lista de teste antiga
+
+  const $ = id => document.getElementById(id);
+
+  // ---------- Janela de confirmação ----------
+  let modalResolve = null;
+  function confirmar(texto, okLabel, danger) {
+    $('modalText').textContent = texto;
+    $('modalOk').textContent = okLabel;
+    $('modalOk').classList.toggle('danger', !!danger);
+    $('modalBg').classList.add('open');
+    return new Promise(res => { modalResolve = res; });
+  }
+  function fecharModal(valor) {
+    $('modalBg').classList.remove('open');
+    if (modalResolve) { modalResolve(valor); modalResolve = null; }
+  }
+  $('modalOk').onclick = () => fecharModal(true);
+  $('modalCancel').onclick = () => fecharModal(false);
+  $('modalBg').onclick = e => { if (e.target === $('modalBg')) fecharModal(false); };
+
+  // ---------- Renderização ----------
+  let arriving = null; // id do item que acabou de mudar de seção
+
+  function render() {
+    const sec = $('sections');
+    sec.innerHTML = '';
+    GROUPS.forEach(g => {
+      const list = items.filter(i => !i.done && i.group === g.id);
+      if (list.length) addSection(sec, `${g.title} · falta ${list.length}`, list);
+    });
+    const done = items.filter(i => i.done);
+    if (done.length) addSection(sec, `Já comprado · ${done.length}`, done);
+
+    const total = items.length;
+    $('progressText').textContent = total
+      ? `${done.length} de ${total} comprados`
+      : 'Nenhum item na lista';
+    const pct = total ? Math.round(done.length / total * 100) : 0;
+    $('progressPct').textContent = total ? pct + '%' : '';
+    $('bar').style.width = pct + '%';
+    $('celebrate').innerHTML = total && done.length === total
+      ? '<div class="celebrate">🎉 Tudo comprado!</div>' : '';
+    arriving = null;
+  }
+
+  function addSection(parent, title, list) {
+    const h = document.createElement('h2');
+    h.textContent = title;
+    const ul = document.createElement('ul');
+    list.forEach(i => ul.appendChild(row(i)));
+    parent.append(h, ul);
+  }
+
+  function row(item) {
+    const li = document.createElement('li');
+    if (item.done) li.classList.add('done');
+    if (item.id === arriving) li.classList.add('arrive');
+
+    const check = document.createElement('button');
+    check.className = 'check';
+    check.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    check.setAttribute('aria-label', item.done ? 'Desmarcar' : 'Marcar como comprado');
+
+    const info = document.createElement('div');
+    info.className = 'info';
+    const name = document.createElement('div');
+    if (item.qty) {
+      const q = document.createElement('span');
+      q.className = 'qty';
+      q.textContent = item.qty;
+      name.appendChild(q);
+    }
+    const n = document.createElement('span');
+    n.className = 'name';
+    n.textContent = item.name;
+    name.appendChild(n);
+    info.appendChild(name);
+    if (item.detail) {
+      const d = document.createElement('div');
+      d.className = 'detail';
+      d.textContent = item.detail;
+      info.appendChild(d);
+    }
+
+    const toggle = () => {
+      if (li.dataset.busy) return;
+      li.dataset.busy = '1';
+      const marcando = !item.done;
+      li.classList.remove('arrive');
+      li.classList.add(marcando ? 'anim-check' : 'anim-uncheck');
+      if (marcando && navigator.vibrate) navigator.vibrate(15);
+      setTimeout(() => {
+        item.done = marcando;
+        arriving = item.id;
+        save(); render();
+      }, marcando ? 600 : 420);
+    };
+    check.onclick = toggle;
+    info.onclick = toggle;
+
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.setAttribute('aria-label', 'Remover');
+    del.onclick = async (e) => {
+      e.stopPropagation();
+      const ok = await confirmar(`Tem certeza que deseja remover "${item.name}" da lista?`, 'Remover', true);
+      if (!ok) return;
+      li.classList.add('leaving');
+      setTimeout(() => {
+        items = items.filter(i => i.id !== item.id);
+        save(); render();
+      }, 350);
+    };
+
+    li.append(check, info, del);
+    return li;
+  }
+
+  $('form').onsubmit = async e => {
+    e.preventDefault();
+    const name = $('input').value.trim();
+    if (!name) return;
+    $('input').blur();
+    const ok = await confirmar(`Tem certeza que deseja adicionar "${name}" à lista?`, 'Adicionar');
+    if (!ok) return;
+    const item = { id: 'u' + Date.now(), name, qty: '', detail: '', group: 'extra', done: false };
+    items.push(item);
+    arriving = item.id;
+    save(); render();
+    $('input').value = '';
+  };
+
+  // ---------- Compartilhar (texto formatado para WhatsApp) ----------
+  function textoWhatsApp() {
+    const falta = items.filter(i => !i.done);
+    const comprados = items.length - falta.length;
+    const linhas = ['📚 *LISTA DE MATERIAL ESCOLAR*', '_Infantil 1 · 2027_', ''];
+    if (!falta.length) {
+      linhas.push('🎉 *Tudo comprado!* Não falta mais nada.');
+      return linhas.join('\n');
+    }
+    linhas.push(`🛒 *Falta comprar: ${falta.length} ${falta.length === 1 ? 'item' : 'itens'}*`);
+    GROUPS.forEach(g => {
+      const lista = falta.filter(i => i.group === g.id);
+      if (!lista.length) return;
+      linhas.push('', `*${g.title}*`);
+      lista.forEach(i => {
+        let l = '• ' + (i.qty ? `${i.qty} – ` : '') + i.name;
+        if (i.detail) l += ` _(${i.detail})_`;
+        linhas.push(l);
+      });
+    });
+    linhas.push('', `✅ Já comprados: ${comprados} de ${items.length}`);
+    return linhas.join('\n');
+  }
+
+  function toast(msg) {
+    $('toast').textContent = msg;
+    $('toast').classList.add('show');
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => $('toast').classList.remove('show'), 2500);
+  }
+
+  $('shareBtn').onclick = async () => {
+    const text = textoWhatsApp();
+    // Celular: abre a janela de compartilhar do sistema (WhatsApp, etc.)
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    // Computador: copia o texto e abre o WhatsApp Web
+    try { await navigator.clipboard.writeText(text); toast('Lista copiada! Abrindo o WhatsApp…'); } catch (e) {}
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  };
+
+  render();
+</script>
+</body>
+</html>
